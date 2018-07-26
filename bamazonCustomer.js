@@ -2,8 +2,10 @@
 var inquirer = require("inquirer");
 var mysql = require("mysql");
 let Item = require("./itemConstructor");
-const userInput = process.argv;
-const userInputCommand = userInput[2];
+let readyToPurchase = false;
+let itemNameArray = [];
+let itemNumberArray = [];
+let itemCostArray = [];
 
 
 // My Database Connection///////////////////
@@ -15,15 +17,15 @@ var connection = mysql.createConnection({
     database: "bamazon"
 });
 
-connection.connect(function(err) {
+connection.connect(function (err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId + "\n");
-    runTheShop();
+    initializeRunTheShop();
 });
 
 
 // Start of my program's functionality/////
-const runTheShop = () => {
+const initializeRunTheShop = () => {
     inquirer.prompt([
 
         {
@@ -46,49 +48,125 @@ const runTheShop = () => {
         {
             type: "input",
             name: "itemAmount",
-            message: "How many of this item would you like to purchase?"
-
+            message: "How many do you want?",
+            validate: function (value) {
+                if (isNaN(value) == false) {
+                    return true;
+                } else {
+                    console.log("\n" + "Woah there! Real pirates only ask in numbers");
+                    return false;
+                }
+            }
         }
 
 
-    ]).then(function(user) {
+    ]).then(function (user) {
         if (user.welcome === !true) {
             console.log("  Well if you're not going to use this bootleg service, try our other free products, such as 'Piratebay'," + "\n" +
                 " 'Fakebook', and 'Pirategram'. Have a great bootlegging day ya beautiful pirate!");
             process.exit();
         } else {
-            if(isNaN(user.itemAmount)){
-                console.log("Hey man! We only deal in whole numbers here. Try again-");
-            }else{
-                itemManager(user.itemName, user.itemAmount);
-
-            }
+            itemFinder(user.itemName, user.itemAmount, user.userName);
         }
 
     });
 
 }
 
-const itemManager = (item) => {
-  console.log("Selecting all products...\n");
-  connection.query("SELECT * FROM products", function(err, res) {
-    if (err) throw err;
-    // Log all results of the SELECT statement
-    console.log(res);
-    connection.end();
-  });
+const itemFinder = (itemName, itemAmount, userName, itemCost) => {
+    console.log("Finding and selecting your product...\n");
+    connection.query("SELECT * FROM products WHERE product_name = " + "'" + itemName + "'", function (err, res) {
+        if (err) throw err;
+        let itemCost = res[0].price;
+        let totalItemCost = itemCost * itemAmount;
+        let numberOfStoredItems = res[0].stock_quantity;
+        console.log("There are " + numberOfStoredItems + " of those " + itemName + " items." + "\n" + "At a cost of $" + itemCost + " each. " + "\n" + userName + ", you have just purchased " + itemAmount + " of them for a total of $"
+            + totalItemCost);
 
+        if (itemAmount > numberOfStoredItems) {
+            console.log("Aye, oi see you're a greedy pirate " + userName + ". We don't have enough of that item! Try a smaller amount-" + "\n");
+            itemAmountSelector(itemName, userName);
 
+        } else {
+            keepShoppingFunction(itemName, itemAmount, userName, totalItemCost);
+        }
 
+    });
 
+}
+const itemAmountSelector = (itemName, userName, totalItemCost) => {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "itemAmount",
+            message: "How many do you want?",
+            validate: function (value) {
+                if (isNaN(value) == false) {
+                    return true;
+                } else {
+                    console.log("\n" + "Woah there! Real pirates only ask in numbers");
+                    return false;
+                }
+            }
+        }
 
+    ]).then(function (user) {
+        itemFinder(itemName, user.itemAmount, userName, totalItemCost);
 
+    });
+}
 
+const keepShoppingFunction = (itemName, itemAmount, userName, totalItemCost) => {
+    inquirer.prompt([
+        {
+            type: "confirm",
+            name: "keepShopping",
+            message: "Awesome! We put " + itemName + " and it's amount (" + itemAmount + ") in your cart. Would You like to keep shopping?",
+        }
 
+    ]).then(function (user) {
+        itemNameArray.push(itemName);
+        itemNumberArray.push(itemAmount)
+        itemCostArray.push(totalItemCost);
 
+        if (user.keepShopping == true) {
+            shoppingList(itemName, itemAmount, userName, totalItemCost);
+            
+        } else {
+            cartExecution();
+        }
+
+    });
 
 }
 
+const shoppingList = (itemName, itemAmount, userName, totalItemCost) => {
+    inquirer.prompt([
+        {
+            type: "list",
+            name: "itemName",
+            message: "Welcome in! What can I get for you today?",
+            choices: ["Coors Light", "Kraft Cheese", "48oz of Salmon", "TV", "Hydro Flask",
+                "PS4", "Kidney", "Backpack", "G.I. Joe", "6oz of Liquid Courage"]
+        }
+
+    ]).then(function (user) {
+        itemName = user.itemName;
+        itemAmountSelector(itemName, userName, totalItemCost);
+    });
+
+}
+
+const cartExecution = () => {
+    console.log(itemNameArray);
+    console.log(itemCostArray);
+
+    let finalCostAmount = itemCostArray.reduce((total, amount) => total + amount);
+    console.log(finalCostAmount);
+}
+
+
+    
 
 
 
@@ -102,36 +180,3 @@ const itemManager = (item) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-// switch (item) {
-//     case "Coors Light": itemChooser(item);
-//         break;
-//     case "Kraft Cheese": itemChooser(item);
-//         break;
-//     case "48oz of Salmon": itemChooser(user.items);
-//         break;
-//     case "TV": itemChooser(user.items);
-//         break;
-//     case "Hydro Flask": itemChooser(user.items);
-//         break;
-//     case "PS4": itemChooser(user.items);
-//         break;
-//     case "Kidney": itemChooser(user.items);
-//         break;
-//     case "Backpack": itemChooser(user.items);
-//         break;
-//     case "G.I. Joe": itemChooser(user.items);
-//         break;
-//     case "6oz of Liquid Courage": itemChooser(user.items);
-//         break;
