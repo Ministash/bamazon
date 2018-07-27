@@ -80,6 +80,7 @@ const itemFinder = (itemName, itemAmount, userName, itemCost) => {
         let itemCost = res[0].price;
         let totalItemCost = itemCost * itemAmount;
         let numberOfStoredItems = res[0].stock_quantity;
+        // dataMover(numberOfStoredItems);
         console.log("There are " + numberOfStoredItems + " of those " + itemName + " items." + "\n" + "At a cost of $" + itemCost + " each. " + "\n" + userName + ", you have just purchased " + itemAmount + " of them for a total of $"
             + totalItemCost);
 
@@ -128,12 +129,13 @@ const keepShoppingFunction = (itemName, itemAmount, userName, totalItemCost) => 
         itemNameArray.push(itemName);
         itemNumberArray.push(itemAmount)
         itemCostArray.push(totalItemCost);
+        // updateDataBase(itemName, itemAmount, userName, totalItemCost);
 
         if (user.keepShopping == true) {
             shoppingList(itemName, itemAmount, userName, totalItemCost);
-            
+
         } else {
-            cartExecution();
+            cartExecution(itemName, itemAmount, userName, totalItemCost);
         }
 
     });
@@ -157,16 +159,51 @@ const shoppingList = (itemName, itemAmount, userName, totalItemCost) => {
 
 }
 
-const cartExecution = () => {
-    console.log(itemNameArray);
-    console.log(itemCostArray);
+const cartExecution = (itemName, itemAmount, userName, totalItemCost) => {
+    inquirer.prompt([
+        {
+            type: "confirm",
+            name: "finishTheCart",
+            message: "Are you ready to check out?",
+        }
 
-    let finalCostAmount = itemCostArray.reduce((total, amount) => total + amount);
-    console.log(finalCostAmount);
+    ]).then(function (user) {
+        if(user.finishTheCart == false){
+            shoppingList(itemName, itemAmount, userName, totalItemCost);
+            console.log("Well then, let's keep shopping");
+
+        }else{
+            let finalCostAmount = itemCostArray.reduce((total, amount) => total + amount);
+            console.log("We went a head and processed your order for a total of $" + finalCostAmount + ". Thank you for shopping with us!" );
+            connection.end();
+        }
+    });
 }
 
+// const updateDataBase = (itemName, itemAmount) =>{
 
-    
+//     connection.query("SELECT * FROM products WHERE product_name = " + "'" + itemName + "'", function (err, res) {
+//         let numberOfStoredItems = res[0].stock_quantity;
+
+//         let updatedItemAmount = numberOfStoredItems - itemAmount;
+//         var query = connection.query(
+//             "UPDATE products SET ? WHERE ?",
+//             [
+//               {
+//                 quantity: updatedItemAmount
+//               },
+//               {
+//                 department_name: itemName
+//               }
+//             ]
+//           );
+//     });
+
+
+
+// }
+
+
 
 
 
