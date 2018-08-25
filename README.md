@@ -1,7 +1,7 @@
 # Bamazon
 ##### A CLI Application
 
-This application allows Users To shop through a Database of Items Available for Sale. Database is Updated Accordingly with every Transaction. Below are steps for basic Use / Navigation of Bamazon. 
+This application allows Users To shop through a Database of Items Available for Sale. Database is Updated Accordingly with every Transaction. Below are steps for basic Use / Navigation of Bamazon. This app requires node, npm inquirer, npm mysql, and the set up of a my mysql database.
 (**Video Example Below as well**).
 
 | Steps       | Prompts           | Possible Actions  |
@@ -10,7 +10,7 @@ This application allows Users To shop through a Database of Items Available for 
 | __**2.**__ User Is alerted what Item they have Selected     | User is prompted, asking how many of the chosen item they would like to purchase.      |   IF (desired quantity <= INstock) && (desired quantity > 0) then Allow Purchase. Move to Step Three |
 | __**3.**__ After Quantity is Confirmed User is shown thier Receipt [Product Name, Quantity, Total] | User is Prompted, asking if they would like to continue shopping. {Yes/No}      |    **Continue Shopping:** User is provided Updated Item List. Return to Step One  **"DO NOT" Continue Shopping:** User is thanked for using Bamazon & connection is ended. |
 
-- [Bamazon Video Demo Link](https://youtu.be/sOY9tGSllxI "Bamazon Video Demo Link")
+- [Bamazon Video Demo Link](https://www.youtube.com/watch?v=jli2FCyEYtM "Bamazon Video Demo Link")
 
 
 
