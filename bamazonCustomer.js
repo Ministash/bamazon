@@ -2,7 +2,7 @@
 
 Initially, I decided to divide each prompt into it's own function. 
 It felt like the easiest way return back to any prompt I wanted to, regardless of where I 
-had been in the squence of guiding the user. But, in the end it just made data management difficult because I had
+had been in the sequence of guiding the user. But, in the end it just made data management difficult because I had
 to pass a bunch of values between each function. On a smaller application 
 like this, it's not too awful. However, I could see how much more difficult
 it would be to manage all of those values throughout a larger program. Any advice
@@ -72,17 +72,26 @@ const itemFinder = (itemName, itemAmount, userName, itemCost) => {
     var query = connection.query("SELECT * FROM products WHERE product_name = " + "'" + itemName + "'", function (err, res) {
         if (err) throw err;
 
+        //getting the cost of each item from the data base
         let itemCost = res[0].price;
+
+        /*This is first defined as a global variable because it needs a general value the first time the 
+        program runs. Too many things calling on it before it gets intially used */
         totalItemCost = itemCost * itemAmount;
+
+        //getting the amount of stored variables
         let numberOfStoredItems = res[0].stock_quantity;
 
+        //some sweet sweet interactive user prompt
         console.log("There are " + numberOfStoredItems + " of those " + itemName + " items." + "\n" + "At a cost of $" + itemCost + " each. " + "\n" + userName + ", you have just purchased " + itemAmount + " of them for a total of $"
             + totalItemCost + "\n");
 
+        //making sure that the user isn't asking for too much
         if (itemAmount > numberOfStoredItems) {
             console.log("Aye, oi see you're a greedy pirate " + userName + ". We don't have enough of that item! Try a smaller amount-" + "\n");
             itemAmountSelector(itemName, userName);
 
+            //this is the what happens after I wip the user into shape and get them on the righ track
         } else {
             updateDataBase(itemName, itemAmount, numberOfStoredItems);
             keepShoppingFunction(itemName, itemAmount, userName, totalItemCost);
@@ -93,18 +102,19 @@ const itemFinder = (itemName, itemAmount, userName, itemCost) => {
 
 // This function updates the database everytime the user picks an item.
 const updateDataBase = (itemName, itemAmount, numberOfStoredItems) => {
+    //finding how many items we have left over after buying a few things
     let updatedItemAmount = numberOfStoredItems - itemAmount;
     var query = connection.query(
-        "UPDATE products SET ? WHERE ?", 
+        "UPDATE products SET ? WHERE ?",
         [
-          {
-            stock_quantity: updatedItemAmount
-          },
-          {
-            product_name: itemName
-          }
+            {
+                stock_quantity: updatedItemAmount
+            },
+            {
+                product_name: itemName
+            }
         ]
-      );
+    );
 }
 
 ///////This function displays the prompt for asking the user how many of something they want
@@ -140,6 +150,7 @@ const keepShoppingFunction = (itemName, itemAmount, userName, totalItemCost) => 
         }
 
     ]).then(function (user) {
+        //Pushing all of my values to an array for the end of the program to call upon
         itemNameArray.push(itemName);
         itemNumberArray.push(itemAmount)
         itemCostArray.push(totalItemCost);
@@ -168,6 +179,7 @@ const shoppingList = (itemName, itemAmount, userName, totalItemCost) => {
         }
 
     ]).then(function (user) {
+        //Here I am redefining the item's name value so we can have more than one thing that the user purchases
         itemName = user.itemName;
         itemAmountSelector(itemName, userName, totalItemCost);
     });
@@ -189,6 +201,7 @@ const cartExecution = (itemName, itemAmount, userName, totalItemCost) => {
             console.log("Well then, let's keep shopping");
 
         } else {
+            //Once the program ends, I need to add all the amounts together, which reduce is really great at doing!
             let finalCostAmount = itemCostArray.reduce((total, amount) => total + amount);
             console.log("We went a head and processed your order for a total of $" + finalCostAmount + ". Thank you for shopping with us!");
             connection.end();
